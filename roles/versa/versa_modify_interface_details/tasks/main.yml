@@ -1,7 +1,7 @@
 ---
 
 - debug:
-          msg: "MODIFY INTERFACE LIST: {{ modifyInterfaceList }}"
+          msg: "MODIFY INTERFACE LIST INPUT RECEIVED: {{ modifyInterfaceList }}"
 
 - name: Commit changes to the Device
   uri:
