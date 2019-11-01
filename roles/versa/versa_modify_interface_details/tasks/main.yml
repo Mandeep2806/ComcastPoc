@@ -48,7 +48,7 @@
   when: subInterfaceId == "0"
 
 - set_fact:
-    "{{ item.family.inet.address[0].addr }}": "{{ currentServiceItem.ipAddress }}"
+    item.family.inet.address[0].addr: "{{ currentServiceItem.ipAddress }}"
   with_items:  "{{ interfaceInfo.vni.unit }}"
   when: item.name | string == subInterfaceId
   
