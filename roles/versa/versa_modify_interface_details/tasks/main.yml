@@ -59,7 +59,7 @@
     interfaceInfoBody: "{{ inputParamsList | modifySubInterfaceDetails }}"
   
 - debug:
-          msg: "INTERFACE RESPONSE3: { interfaceInfoBody }}"
+          msg: "INTERFACE RESPONSE3: {{ interfaceInfoBody }}"
 
 - name: Commit changes to the Device
   uri:
