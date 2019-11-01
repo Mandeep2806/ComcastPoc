@@ -23,9 +23,11 @@
       Accept: "application/json"
   register: interfaceResponse
 
+- set_fact:
+    interfaceInfo: "{{ interfaceResponse.content | from_json }}"
 
 - debug:
-          msg: "INTERFACE RESPONSE: {{ interfaceResponse.json }}"
+          msg: "INTERFACE RESPONSE: {{ interfaceInfo }}"
 
 - debug:
           msg: "INTERFACE RESPONSE2: {{ interfaceResponse.content.vni.unit }}"
