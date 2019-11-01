@@ -3,6 +3,30 @@
 - debug:
           msg: "MKA MODIFY INTERFACE LIST INPUT: {{ modifyInterfaceList }}"
 
+- debug:
+          msg: "Current ITEM: {{ currentServiceItem }}"
+
+- name: Fetch Interface Information for Branch
+  uri:
+    url: "{{ versaUrl }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ currentServiceItem.portName }}%22"
+    method: GET
+    user: "{{ username }}"
+    password: "{{ password }}"
+    #body: "{{ interfaceinfo }}"
+    force_basic_auth: yes
+    status_code: 200
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: interfaceResponse
+
+
+- debug:
+          msg: "INTERFACE RESPONSE: {{ interfaceResponse }}"
+
 - name: Commit changes to the Device
   uri:
     url: "{{ versaUrl }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ item.portName }}%22"
@@ -19,4 +43,3 @@
       Content-Type: "application/json"
       Accept: "application/json"
   register: response
-  with_items:  "{{ modifyInterfaceList }}"
