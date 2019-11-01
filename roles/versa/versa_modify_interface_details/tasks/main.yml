@@ -40,9 +40,12 @@
           msg: "SUB-INTERFACE INPUT NAME: {{ currentServiceItem.subInterfaceId }}"
 
 - set_fact:
+    subInterfaceId: "{{ currentServiceItem.subInterfaceId | int }}"
+
+- set_fact:
     item.family.inet.address[0]: "{{ currentServiceItem.ipAddress }}"
   with_items:  "{{ interfaceInfo.vni.unit }}"
-  when: item.name == currentServiceItem.subInterfaceId
+  when: item.name == subInterfaceId
   
 - debug:
           msg: "INTERFACE RESPONSE3: {{ interfaceInfo.vni.unit }}"
