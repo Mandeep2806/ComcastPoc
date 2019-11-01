@@ -33,6 +33,9 @@
           msg: "INTERFACE RESPONSE2: {{ interfaceInfo.vni.unit }}"
 
 - debug:
+          msg: "INTERFACE INRRESPONSE2: {{ interfaceInfo.vni.unit[0] }}"
+
+- debug:
           msg: "ONLY SUB-INTERFACE NAME: {{ item.name }}"
   with_items:  "{{ interfaceInfo.vni.unit }}"
   when: item.name | string == "0"
