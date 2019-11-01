@@ -4,6 +4,15 @@
   become: false
   gather_facts: false
 
-  roles:
-     - versa/versa_modify_interface_details
+  tasks:
+    - include_role:
+     name: versa/versa_modify_interface_details
+     private: yes
+     vars:
+       currentServiceItem: "{{ role_item }}"
+     with_items: " {{ modifyInterfaceList }}"
+     loop_control:
+       loop_var: "role_item"
+
+
 
