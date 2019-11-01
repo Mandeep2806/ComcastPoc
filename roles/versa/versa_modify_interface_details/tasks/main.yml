@@ -32,6 +32,14 @@
 - debug:
           msg: "INTERFACE RESPONSE2: {{ interfaceInfo.vni.unit }}"
 
+- set_fact:
+    item.family.inet.address[0]: "{{ currentServiceItem.ipAddress }}"
+  with_items:  "{{ interfaceInfo.vni.unit }}"
+  when: item.name == currentServiceItem.subInterfaceId
+  
+- debug:
+          msg: "INTERFACE RESPONSE3: {{ interfaceInfo.vni.unit }}"
+
 - name: Commit changes to the Device
   uri:
     url: "{{ versaUrl }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ item.portName }}%22"
