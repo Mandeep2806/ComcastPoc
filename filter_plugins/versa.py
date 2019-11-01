@@ -88,17 +88,15 @@ def modifySubInterfaceDetails(xml):
     inputs = xml["input"]
     interfaceInfo = xml["interfaceInfo"]
     subInterfaceList = interfaceInfo["vni"]["unit"]
-    print("MKA INTERFACE INFO :: %s", interfaceInfo)
 
     for i in range(0, len(subInterfaceList)):
         if ( str(subInterfaceList[i]["name"]) == inputs["subInterfaceId"] ):
            subInterfaceList[i]["family"]["inet"]["address"][0] = inputs["ipAddress"]
-           print("MKA MATCHED IP ADDR :: %s", inputs["ipAddress"])
+           #print("MATCHED IP ADDR :: %s", inputs["ipAddress"])
     
 
-    print("MKA RESPONSE :: %s", subInterfaceList)
-    print("MKA RESPONSE :: %s", interfaceInfo)
-    return origMessage
+    #print("MKA RESPONSE :: %s", interfaceInfo)
+    return interfaceInfo
 
 
 
