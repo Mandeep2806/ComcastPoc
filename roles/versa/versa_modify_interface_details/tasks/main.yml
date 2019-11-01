@@ -38,16 +38,16 @@
   when: item.name | string == "0"
 
 - set_fact:
-    subInterfaceId: "{{ currentServiceItem.subInterfaceId | int }}"
+    subInterfaceId: "{{ currentServiceItem.subInterfaceId }}"
 
 - debug:
           msg: "MKA MATCHED {{ currentServiceItem.subInterfaceId }}"
-  when: subInterfaceId == 0
+  when: subInterfaceId == "0"
 
 - set_fact:
     item.family.inet.address[0]: "{{ currentServiceItem.ipAddress }}"
   with_items:  "{{ interfaceInfo.vni.unit }}"
-  when: item.name == subInterfaceId
+  when: item.name | string == subInterfaceId
   
 - debug:
           msg: "INTERFACE RESPONSE3: {{ interfaceInfo.vni.unit }}"
