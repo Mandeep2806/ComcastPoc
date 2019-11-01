@@ -91,7 +91,7 @@ def modifySubInterfaceDetails(xml):
 
     for i in range(0, len(subInterfaceList)):
         if ( str(subInterfaceList[i]["name"]) == inputs["subInterfaceId"] ):
-           subInterfaceList[i]["family"]["inet"]["address"][0] = inputs["ipAddress"]
+           subInterfaceList[i]["family"]["inet"]["address"][0]["addr"] = inputs["ipAddress"]
            #print("MATCHED IP ADDR :: %s", inputs["ipAddress"])
     
 
