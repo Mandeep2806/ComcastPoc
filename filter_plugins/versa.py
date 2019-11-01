@@ -91,7 +91,7 @@ def modifySubInterfaceDetails(xml):
     print("MKA INTERFACE INFO :: %s", interfaceInfo)
 
     for i in range(0, len(subInterfaceList)):
-        if ( string(subInterfaceList[i].name) == inputs["subInterfaceId"] ):
+        if ( str(subInterfaceList[i].name) == inputs["subInterfaceId"] ):
            subInterfaceList[i]["family"]["inet"]["address"][0] = inputs["ipAddress"]
            print("MKA MATCHED IP ADDR :: %s", inputs["ipAddress"])
     
