@@ -8,7 +8,7 @@
 
 - name: Fetch Interface Information for Branch
   uri:
-    url: "{{ versaUrl }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ currentServiceItem.portName }}%22"
+    url: "{{ versaUrl }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ currentServiceItem.portName }}%22?deep"
     method: GET
     user: "{{ username }}"
     password: "{{ password }}"
