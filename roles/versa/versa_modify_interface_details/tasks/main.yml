@@ -35,7 +35,7 @@
 - set_fact:
     item.family.inet.address[0]: "{{ currentServiceItem.ipAddress }}"
   with_items:  "{{ interfaceInfo.vni.unit }}"
-  when: item.name == "{{ currentServiceItem.subInterfaceId }}"
+  when: item.name == "{{ currentServiceItem.subInterfaceId | int }}"
   
 - debug:
           msg: "INTERFACE RESPONSE3: {{ interfaceInfo.vni.unit }}"
