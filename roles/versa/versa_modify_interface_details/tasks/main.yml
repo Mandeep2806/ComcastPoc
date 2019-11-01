@@ -35,7 +35,7 @@
 - debug:
           msg: "ONLY SUB-INTERFACE NAME: {{ item.name }}"
   with_items:  "{{ interfaceInfo.vni.unit }}"
-  when: item.name | string == 0
+  when: item.name | string == "0"
 
 - set_fact:
     subInterfaceId: "{{ currentServiceItem.subInterfaceId | int }}"
