@@ -30,7 +30,7 @@
           msg: "INTERFACE RESPONSE: {{ interfaceInfo }}"
 
 - debug:
-          msg: "INTERFACE RESPONSE2: {{ interfaceResponse.content.vni.unit }}"
+          msg: "INTERFACE RESPONSE2: {{ interfaceInfo.vni.unit }}"
 
 - name: Commit changes to the Device
   uri:
