@@ -47,10 +47,36 @@
           msg: "MKA MATCHED {{ currentServiceItem.subInterfaceId }}"
   when: subInterfaceId == "0"
 
+#- set_fact:
+#    item.family.inet.address[0].addr: "{{ currentServiceItem.ipAddress }}"
+#  with_items:  "{{ interfaceInfo.vni.unit }}"
+#  when: item.name | string == subInterfaceId
+
 - set_fact:
-    item.family.inet.address[0].addr: "{{ currentServiceItem.ipAddress }}"
-  with_items:  "{{ interfaceInfo.vni.unit }}"
-  when: item.name | string == subInterfaceId
+    inputParamsList: { 'input': '{{ currentServiceItem }}', 'interfaceInfo': '{{  interfaceInfo }}' }
+
+- set_fact:
+    interfaceInfoBody: "{{ inputParamsList | modifySubInterfaceDetails }}"
+  
+- debug:
+          msg: "INTERFACE RESPONSE3: { interfaceInfoBody }}"
+
+- name: Commit changes to the Device
+  uri:
+    url: "{{ versaUrl }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ item.portName }}%22"
+    method: PUT
+    user: "{{ username }}"
+    password: "{{ password }}"
+    body: "{{ interfaceinfo }}"
+    force_basic_auth: yes
+    status_code: 204
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: response
   
 - debug:
           msg: "INTERFACE RESPONSE3: {{ interfaceInfo.vni.unit }}"

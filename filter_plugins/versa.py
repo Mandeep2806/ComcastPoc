@@ -82,6 +82,31 @@ def modifyInterfaceDetails(xml):
     return origMessage
 
 
+
+def modifySubInterfaceDetails(xml):
+
+    inputs = xml["input"]
+    interfaceInfo = xml["interfaceInfo"]
+    subInterfaceList = interfaceInfo["vni"]["unit"]
+    print("MKA INTERFACE INFO :: %s", interfaceInfo)
+
+    for i in range(0, len(subInterfaceList)):
+        if ( string(subInterfaceList[i].name) == inputs["subInterfaceId"] ):
+           subInterfaceList[i]["family"]["inet"]["address"][0] = inputs["ipAddress"]
+           print("MKA MATCHED IP ADDR :: %s", inputs["ipAddress"])
+    
+
+    print("MKA RESPONSE :: %s", subInterfaceList)
+    print("MKA RESPONSE :: %s", interfaceInfo)
+    return origMessage
+
+
+
+
+
+
+
+
 class FilterModule(object):
     """Ansible encoder Jinja2 filters."""
 
@@ -90,5 +115,6 @@ class FilterModule(object):
 
         return {
             'modifyInterfaceDetails': modifyInterfaceDetails,
-            'updateInterfaceList': updateInterfaceList
+            'updateInterfaceList': updateInterfaceList,
+            'modifySubInterfaceDetails': modifySubInterfaceDetails
         }
