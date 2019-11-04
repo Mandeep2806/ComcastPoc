@@ -12,8 +12,8 @@
           vars:
             currentServiceItem: "{{ role_item }}"
           with_items: " {{ modifyInterfaceList }}"
-          loop_control:
-            loop_var: "role_item"
     - rescue:
         - debug:
             msg: "MKA FAIL"
+          loop_control:
+            loop_var: "role_item"
