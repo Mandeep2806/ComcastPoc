@@ -21,9 +21,6 @@
   register: interfaceResponse
 
 
-- debug:
-          msg: "INTERFACE RESPONSE: {{ interfaceResponse }}"
-
 - set_fact:
     interfaceInfo: "{{ interfaceResponse.content | from_json }}"
 
@@ -68,3 +65,4 @@
 - rescue:
   - debug:
       msg: "Modify Interface has failed for {{ currentServiceItem }}"
+  when: interfaceResponse.status != 204
