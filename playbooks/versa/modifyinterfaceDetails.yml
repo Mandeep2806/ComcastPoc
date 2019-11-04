@@ -5,11 +5,17 @@
   gather_facts: false
 
   tasks:
-    - include_role:
-        name: versa/versa_modify_interface_details
-      private: yes
-      vars:
-        currentServiceItem: "{{ role_item }}"
-      with_items: " {{ modifyInterfaceList }}"
-      loop_control:
-        loop_var: "role_item"
+    - block:
+        - include_role:
+             name: versa/versa_modify_interface_details
+          private: yes
+          vars:
+            currentServiceItem: "{{ role_item }}"
+        - debug:
+            msg: "MKA SUCCESS"
+          with_items: " {{ modifyInterfaceList }}"
+          loop_control:
+            loop_var: "role_item"
+    - rescue:
+        - debug:
+            msg: "MKA FAIL"
