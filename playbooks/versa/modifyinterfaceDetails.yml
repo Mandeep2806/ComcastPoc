@@ -6,12 +6,13 @@
 
   tasks:
     - block:
+        - debug: msg='MKAAAAAA BASIC'
         - include_role:
             name: versa/versa_modify_interface_details
           vars:
             currentServiceItem: "{{ role_item }}"
           with_items: " {{ modifyInterfaceList }}"
-    - rescue:
-        - debug: msg='An error occurred during the upgrade,roll back to the old version'
           loop_control:
             loop_var: "role_item"
+    - rescue:
+        - debug: msg='MKAAAAAA'
