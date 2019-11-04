@@ -7,13 +7,11 @@
   tasks:
     - block:
         - include_role:
-             name: versa/versa_modify_interface_details
-          private: yes
+            name: versa/versa_modify_interface_details
           vars:
             currentServiceItem: "{{ role_item }}"
           with_items: " {{ modifyInterfaceList }}"
-    - rescue:
-        - debug:
-            msg: "MKA FAIL"
           loop_control:
             loop_var: "role_item"
+    - rescue:
+        - debug: msg='An error occurred during the upgrade,roll back to the old version'
