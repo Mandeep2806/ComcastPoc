@@ -62,5 +62,5 @@
         Accept: "application/json"
     register: response
 - rescue:
-  - debug:
-    msg: 'Caught an error, FIX IT'
+  - fail:
+      msg: "The deploy has failed."
