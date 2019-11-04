@@ -3,6 +3,8 @@
 - hosts: localhost
   become: false
   gather_facts: false
+  any_errors_fatal: yes
+
 
   tasks:
     - block:
