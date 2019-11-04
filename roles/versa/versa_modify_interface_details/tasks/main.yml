@@ -20,6 +20,10 @@
       Accept: "application/json"
   register: interfaceResponse
 
+
+- debug:
+          msg: "INTERFACE RESPONSE: {{ interfaceResponse }}"
+
 - set_fact:
     interfaceInfo: "{{ interfaceResponse.content | from_json }}"
 
@@ -62,5 +66,5 @@
         Accept: "application/json"
     register: response
 - rescue:
-  - fail:
-      msg: "The deploy has failed."
+  - debug:
+      msg: "Modify Interface has failed for {{ currentServiceItem }}"
