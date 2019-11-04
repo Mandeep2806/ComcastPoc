@@ -3,18 +3,13 @@
 - hosts: localhost
   become: false
   gather_facts: false
-  any_errors_fatal: yes
-
 
   tasks:
-    - block:
-        - debug: msg='MKAAAAAA BASIC'
-        - include_role:
-            name: versa/versa_modify_interface_details
-          vars:
-            currentServiceItem: "{{ role_item }}"
-          with_items: " {{ modifyInterfaceList }}"
-          loop_control:
-            loop_var: "role_item"
-    - rescue:
-        - debug: msg='MKAAAAAA'
+    - include_role:
+        name: versa/versa_modify_interface_details
+      private: yes
+      vars:
+        currentServiceItem: "{{ role_item }}"
+      with_items: " {{ modifyInterfaceList }}"
+      loop_control:
+        loop_var: "role_item"
