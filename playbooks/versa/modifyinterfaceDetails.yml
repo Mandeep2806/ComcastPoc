@@ -8,10 +8,10 @@
     - block:
         - include_role:
             name: versa/versa_modify_interface_details
+    - rescue:
+        - debug: msg='An error occurred during the upgrade,roll back to the old version'
           vars:
             currentServiceItem: "{{ role_item }}"
           with_items: " {{ modifyInterfaceList }}"
           loop_control:
             loop_var: "role_item"
-    - rescue:
-        - debug: msg='An error occurred during the upgrade,roll back to the old version'
