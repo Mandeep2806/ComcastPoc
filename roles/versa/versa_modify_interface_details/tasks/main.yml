@@ -62,6 +62,6 @@
         Content-Type: "application/json"
         Accept: "application/json"
     register: response
-- rescue:
+  rescue:
   - debug:
-      msg: "Modify Interface has failed for {{ currentServiceItem }}"
+      msg: "SDKLOG: Modify Interface has failed for {{ currentServiceItem }}"
