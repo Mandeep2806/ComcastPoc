@@ -65,4 +65,3 @@
 - rescue:
   - debug:
       msg: "Modify Interface has failed for {{ currentServiceItem }}"
-  when: interfaceResponse.status != 204
