@@ -11,8 +11,6 @@
           private: yes
           vars:
             currentServiceItem: "{{ role_item }}"
-        - debug:
-            msg: "MKA SUCCESS"
           with_items: " {{ modifyInterfaceList }}"
           loop_control:
             loop_var: "role_item"
