@@ -44,8 +44,8 @@
 - debug:
           msg: "Modify interface json: {{ interfaceInfoBody }}"
 
-- name: Modify Branch Interface
-  block:
+- block:
+  - name: Modify Branch Interface
     uri:
       url: "{{ versaUrl }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ currentServiceItem.portName }}%22"
       method: PUT
@@ -61,6 +61,6 @@
         Content-Type: "application/json"
         Accept: "application/json"
     register: response
-  rescue:
-        debug:
-          msg: 'Caught an error, FIX IT'
+ - rescue:
+     - debug:
+       msg: 'Caught an error, FIX IT'
