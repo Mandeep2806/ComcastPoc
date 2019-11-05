@@ -1,0 +1,21 @@
+---
+
+- debug:
+          msg: "CHECK Current ITEM: {{ currentRollbackItem }}"
+
+- name: Modify Branch Interface
+  uri:
+    url: "{{ versaUrl }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ currentRollbackItem.modifyItem.portName }}%22"
+    method: PUT
+    user: "{{ username }}"
+    password: "{{ password }}"
+    body: "{{ currentRollbackItem.origMsg }}"
+    force_basic_auth: yes
+    status_code: 204
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: response
