@@ -4,13 +4,6 @@ method: POST
 username: "{{ username }}"
 password: "{{ password }}"
 branchName: "{{ branchName }}"
-wanIpForInternet: "{{ wanIpForInternet }}"
-wanIpForMpls: "{{ wanIpForMpls }}"
-lanIp: "{{ lanIp }}"
-
-deviceinfo:
-  versanms.devices:
-    device-list: "{{ branchName }}"
 
 executionItems: "{{ executionList | default([]) }}"
 failedItem: "{{ currentItem }}"
@@ -28,5 +21,3 @@ interfaceinfo:
       enable: true
    ether-options: {}
    promiscuous: false
-#url: 
-#  url: "{{ https://35.165.81.59:9182/vnms/ }}"
