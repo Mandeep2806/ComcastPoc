@@ -93,12 +93,23 @@ def modifySubInterfaceDetails(xml):
         if ( str(subInterfaceList[i]["name"]) == inputs["subInterfaceId"] ):
            subInterfaceList[i]["family"]["inet"]["address"][0]["addr"] = inputs["ipAddress"]
            #print("MATCHED IP ADDR :: %s", inputs["ipAddress"])
-    
 
-    #print("MKA RESPONSE :: %s", interfaceInfo)
     return interfaceInfo
 
 
+
+def storeExecutionList(xml):
+
+    origList = xml["origList"]
+    interfaceInfo = xml["interfaceInfo"]
+    currentItem = xml["currentItem"]
+    
+    elementToAdd = {}
+    elementToAdd["modifyItem"] = currentItem
+    elementToAdd["origMsg"] = interfaceInfo
+    origList.append(elementToAdd)
+
+    return origList
 
 
 
@@ -114,5 +125,6 @@ class FilterModule(object):
         return {
             'modifyInterfaceDetails': modifyInterfaceDetails,
             'updateInterfaceList': updateInterfaceList,
-            'modifySubInterfaceDetails': modifySubInterfaceDetails
+            'modifySubInterfaceDetails': modifySubInterfaceDetails,
+            'storeExecutionList': storeExecutionList
         }

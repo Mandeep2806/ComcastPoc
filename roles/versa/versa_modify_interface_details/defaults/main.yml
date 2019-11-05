@@ -12,6 +12,9 @@ deviceinfo:
   versanms.devices:
     device-list: "{{ branchName }}"
 
+executionItems: "{{ executionList | default([]) }}"
+failedItem: "{{ currentItem }}"
+
 interfaceinfo:
   vni:
    name: "{{ item.portName }}"

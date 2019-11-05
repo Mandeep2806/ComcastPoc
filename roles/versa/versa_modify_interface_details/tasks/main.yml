@@ -1,7 +1,10 @@
 ---
 
 - debug:
-          msg: "Current ITEM: {{ currentServiceItem }}"
+          msg: "CHECK Current ITEM: {{ currentServiceItem }}"
+
+- set_fact:
+    currentItem: "{{ currentServiceItem }}"
 
 - name: Fetch Interface Information for Branch
   uri:
@@ -24,10 +27,6 @@
 - set_fact:
     interfaceInfo: "{{ interfaceResponse.content | from_json }}"
 
-- debug:
-          msg: "INTERFACE RESPONSE: {{ interfaceInfo }}"
-
-
 #- set_fact:
 #    subInterfaceId: "{{ currentServiceItem.subInterfaceId }}"
 
@@ -42,26 +41,44 @@
 - set_fact:
     interfaceInfoBody: "{{ inputParamsList | modifySubInterfaceDetails }}"
   
-- debug:
-          msg: "Modify interface json: {{ interfaceInfoBody }}"
 
-- block:
-  - name: Modify Branch Interface
-    uri:
-      url: "{{ versaUrl }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ currentServiceItem.portName }}%22"
-      method: PUT
-      user: "{{ username }}"
-      password: "{{ password }}"
-      body: "{{ interfaceInfoBody }}"
-      force_basic_auth: yes
-      status_code: 204
-      body_format: json
-      validate_certs: no
-      return_content: yes
-      headers:
-        Content-Type: "application/json"
-        Accept: "application/json"
-    register: response
-  rescue:
-  - debug:
-      msg: "SDKLOG: Modify Interface has failed for {{ currentServiceItem }}"
+
+- name: Modify Branch Interface
+  uri:
+    url: "{{ versaUrl }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ currentServiceItem.portName }}%22"
+    method: PUT
+    user: "{{ username }}"
+    password: "{{ password }}"
+    body: "{{ interfaceInfoBody }}"
+    force_basic_auth: yes
+    status_code: 204
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: response
+
+- debug:
+          msg: "SDKLOG: Modify interface Successful for : {{ currentServiceItem }}"
+
+
+#MAINTAIN THE EXECUTION LIST FOR ROLLBACK
+#- set_fact:
+#    executionList: "{{ executionList | default([])}} +  [ { 'modifyItem': 'abc', 'origMsg': 'xyz' } ]"
+
+
+#- set_fact:
+#    executionList: "{{ executionList | default([])}} +  [ { 'modifyItem': '{{ currentServiceItem }}', 'origMsg': '{{ interfaceInfo }}' } ]"
+
+- set_fact:
+    tmpExecutionList: "{{ executionList | default([])}}"
+
+- set_fact:
+    executionListInput: { 'origList': '{{ tmpExecutionList }}', 'interfaceInfo': '{{  interfaceInfo }}', 'currentItem': '{{ currentServiceItem }}' }
+
+- set_fact:
+    executionList: "{{ executionListInput | storeExecutionList }}"
+
+
