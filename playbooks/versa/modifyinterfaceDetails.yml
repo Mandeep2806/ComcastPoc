@@ -17,7 +17,7 @@
       rescue:
          - include_vars: ../../roles/versa/versa_modify_interface_details/defaults/main.yml
          - debug:
-            msg: 'SDKLOG: Modify Interface failed for {{ failedItem }}'
+            msg: 'SDKLOG: Modify Interface failed for {{ branchName }} with details {{ failedItem }}'
          - include_role:
              name: versa/rollback_modify_interface
            private: false
