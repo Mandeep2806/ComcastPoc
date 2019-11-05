@@ -27,3 +27,5 @@
            loop_control:
              loop_var: "role_item"
            when: suppressRollBack==False
+         - fail:
+              msg: Playbok failed to modify interface details
