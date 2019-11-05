@@ -61,7 +61,7 @@
   register: response
 
 - debug:
-          msg: "SDKLOG: Modify interface Successful for : {{ currentServiceItem }}"
+          msg: "SDKLOG: Modify interface Successful for Branch: {{branchName}} with details {{ currentServiceItem }}"
 
 
 #MAINTAIN THE EXECUTION LIST FOR ROLLBACK
