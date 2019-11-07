@@ -35,6 +35,14 @@
 #  with_items:  "{{ interfaceInfo.vni.unit }}"
 #  when: item.name | string == subInterfaceId
 
+#Save original ip address
+- set_fact:
+    origIpAddr: "{{ item.family.inet.address[0].addr }}"
+  with_items:  "{{ interfaceInfo.vni.unit }}"
+  when: item.name | string == currentServiceItem.subInterfaceId
+
+
+
 - set_fact:
     inputParamsList: { 'input': '{{ currentServiceItem }}', 'interfaceInfo': '{{  interfaceInfo }}' }
 
@@ -61,7 +69,7 @@
   register: response
 
 - debug:
-          msg: "SDKLOG: Modify interface Successful for Branch: {{branchName}} with details {{ currentServiceItem }}"
+          msg: "SDKLOG: Modify interface Successful for Branch: {{branchName}}, ip address changed from {{ origIpAddr }} to {{ currentServiceItem.ipAddress }} for port {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }}"
 
 
 #MAINTAIN THE EXECUTION LIST FOR ROLLBACK
