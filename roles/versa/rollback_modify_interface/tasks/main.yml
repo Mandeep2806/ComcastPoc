@@ -19,3 +19,6 @@
       Content-Type: "application/json"
       Accept: "application/json"
   register: response
+
+- debug:
+          msg: "SDKLOG: Rollback completed for Branch: {{branchName}}, ip address reverted back for port {{  currentRollbackItem.modifyItem.portName }} and interfaceID {{ currentRollbackItem.modifyItem.subInterfaceId }}"
