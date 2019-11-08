@@ -69,7 +69,7 @@
   register: response
 
 - debug:
-          msg: "SDKLOG: Modify interface Successful for Branch: {{branchName}}, ip address changed from {{ origIpAddr }} to {{ currentServiceItem.ipAddress }} for port {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }}"
+          msg: "SDKLOG-{{branchName}}: Modify interface Successful, ip address changed from {{ origIpAddr }} to {{ currentServiceItem.ipAddress }} for port {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
 
 
 #MAINTAIN THE EXECUTION LIST FOR ROLLBACK
