@@ -1,0 +1,149 @@
+---
+
+- debug:
+          msg: "Processing modifyInterface request for : {{ currentServiceItem }}"
+
+
+- name: Fetch Interface Information for Branch
+  uri:
+    url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ currentServiceItem.portName }}%22?deep"
+    method: GET
+    user: "{{ versa_username }}"
+    password: "{{ versa_password }}"
+    #body: "{{ interfaceinfo }}"
+    force_basic_auth: yes
+    status_code: 200
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: interfaceResponse
+
+
+- set_fact:
+    interfaceInfo: "{{ interfaceResponse.content | from_json }}"
+
+#- set_fact:
+#    subInterfaceId: "{{ currentServiceItem.subInterfaceId }}"
+
+#- set_fact:
+#    item.family.inet.address[0].addr: "{{ currentServiceItem.ipAddress }}"
+#  with_items:  "{{ interfaceInfo.vni.unit }}"
+#  when: item.name | string == subInterfaceId
+
+
+#### Validate if the subInterfaceId exists, if not then throw an error and return
+- set_fact:
+    subInterfaceExists: false
+
+- set_fact:
+    subInterfaceExists: true
+  with_items:  "{{ interfaceInfo.vni.unit }}"
+  when: item.name | string == currentServiceItem.subInterfaceId
+
+
+- fail:
+    msg: "SDKLOG-{{branchName}}: subInterface doesn't exists {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
+  when: subInterfaceExists == false
+
+
+
+#Save original ip address if already configured, else value will be defaulted to "Not Configured"
+- set_fact:
+    origAttributes: { 'ipAddr': '{{ item.family.inet.address[0].addr | default("Not Configured")}}', 'vlanId': "{{ item['vlan-id'] | default('Not Configured') }}" }
+  with_items:  "{{ interfaceInfo.vni.unit }}"
+  when: item.name | string == currentServiceItem.subInterfaceId
+#  when: item.name | string == currentServiceItem.subInterfaceId and "inet" in item.family
+
+- debug:
+          msg: "ORIG ATTRIBUTES: {{ origAttributes }}"
+
+#Detect if this is a IP change, VLAN Change or Both
+- set_fact:
+    ipChange: false
+    vlanChange: false
+
+- set_fact:
+    ipChange: true
+  when: currentServiceItem.ipAddress != origAttributes.ipAddr
+
+- set_fact:
+    vlanChange: true
+  when: currentServiceItem.vlanId != origAttributes.vlanId
+
+- set_fact:
+    vlanChange: false
+  when: currentServiceItem.vlanId == "Untagged" or origAttributes.vlanId == "Not Configured"  
+
+- debug:
+          msg: "IP CHANGE is : {{ ipChange }}, VLAN CHANGE is : {{ vlanChange }}"
+
+
+
+##########  IF NO IP AND VLAN CHANGES ARE REQUIRED, SKIP THE REST OF THE CONFIGURATION
+- set_fact:
+    skipRestExecution: false
+
+- name: Check if Execution Further Required
+  block:
+    - set_fact:
+        skipRestExecution: true
+    - debug:
+        msg: "SDKLOG-{{branchName}}: Neither IP nor VLAN change detected for port {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
+  when: ipChange == false and vlanChange == false
+
+
+- name: Handle the Interface Changes
+  block:
+    - set_fact:
+        inputParamsList: { 'input': '{{ currentServiceItem }}', 'interfaceInfo': '{{  interfaceInfo }}' , 'isIpChange': '{{ ipChange }}', 'isVlanChange': '{{ vlanChange }}'}
+    - set_fact:
+        interfaceInfoBody: "{{ inputParamsList | modifySubInterfaceDetails }}"
+    - name: Modify Branch Interface
+      uri:
+        url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ currentServiceItem.portName }}%22"
+        method: PUT
+        user: "{{ versa_username }}"
+        password: "{{ versa_password }}"
+        body: "{{ interfaceInfoBody }}"
+        force_basic_auth: yes
+        status_code: 204
+        body_format: json
+        validate_certs: no
+        return_content: yes
+        headers:
+          Content-Type: "application/json"
+          Accept: "application/json"
+      register: response
+
+    - debug:
+          msg: "SDKLOG-{{branchName}}: Modify interface Successful, ip address changed from {{ origAttributes.ipAddr }} to {{ currentServiceItem.ipAddress }} for port {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
+      when: ipChange == true and vlanChange == false
+
+    - debug:
+          msg: "SDKLOG-{{branchName}}: Modify interface Successful, ip address changed from {{ origAttributes.ipAddr }} to {{ currentServiceItem.ipAddress }} ,  vlanId changed from {{ origAttributes.vlanId }} to {{ currentServiceItem.vlanId }} for port {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
+      when: ipChange == true and vlanChange == true
+
+    - debug:
+          msg: "SDKLOG-{{branchName}}: Modify interface Successful, vlanId changed from {{ origAttributes.vlanId }} to {{ currentServiceItem.vlanId }} for port {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
+      when: ipChange == true and vlanChange == true
+
+#MAINTAIN THE EXECUTION LIST FOR ROLLBACK
+#- set_fact:
+#    executionList: "{{ executionList | default([])}} +  [ { 'modifyItem': 'abc', 'origMsg': 'xyz' } ]"
+
+
+#- set_fact:
+#    executionList: "{{ executionList | default([])}} +  [ { 'modifyItem': '{{ currentServiceItem }}', 'origMsg': '{{ interfaceInfo }}' } ]"
+
+    - set_fact:
+        tmpExecutionList: "{{ executionList | default([])}}"
+
+    - set_fact:
+        executionListInput: { 'origList': '{{ tmpExecutionList }}', 'interfaceInfo': '{{  interfaceInfo }}', 'currentItem': '{{ currentServiceItem }}' }
+
+    - set_fact:
+        executionList: "{{ executionListInput | storeExecutionList }}"
+  when: skipRestExecution == false

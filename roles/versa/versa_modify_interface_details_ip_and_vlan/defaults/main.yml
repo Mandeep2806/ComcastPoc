@@ -1,0 +1,36 @@
+---
+
+versa_url: "{{ lookup('env', 'VERSA_URL') }}"
+versa_username: "{{ lookup('env', 'VERSA_USERNAME') }}"
+versa_password: "{{ lookup('env', 'VERSA_PASSWORD') }}"
+
+
+deviceinfo:
+  versanms.devices:
+    device-list: "{{ branchName }}"
+
+executionItems: "{{ executionList | default([]) }}"
+failedItem: "{{ currentItem }}"
+
+ipChange: false
+vlanChange: false
+
+origAttributes:
+  ipAddr: "Not Configured"
+  vlanId: "Not Configured"
+
+interfaceinfo:
+  vni:
+   name: "{{ item.portName }}"
+   enable: true
+   unit :
+    - name: "{{ item.subInterfaceId }}"
+      family:
+       inet:
+        address:
+         - addr: "{{ item.ipAddress }}"
+      enable: true
+   ether-options: {}
+   promiscuous: false
+#url: 
+#  url: "{{ https://35.165.81.59:9182/vnms/ }}"
