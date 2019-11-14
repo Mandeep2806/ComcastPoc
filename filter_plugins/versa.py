@@ -97,6 +97,41 @@ def modifySubInterfaceDetails(xml):
     return interfaceInfo
 
 
+def modifySubInterfaceDetailsIpAndVlan(xml):
+
+    inputs = xml["input"]
+    interfaceInfo = xml["interfaceInfo"]
+    isIpChange = xml["isIpChange"] 
+    isVlanChange = xml["isVlanChange"] 
+    subInterfaceList = interfaceInfo["vni"]["unit"]
+    print("MKA isIpChange :: %s",isIpChange)
+
+    for i in range(0, len(subInterfaceList)):
+        if ( str(subInterfaceList[i]["name"]) == inputs["subInterfaceId"] ):
+           if( isVlanChange ):
+               subInterfaceList[i]["vlan-id"] = inputs["vlanId"]
+           if( isIpChange ):
+               if( "inet" in subInterfaceList[i]["family"]):
+                   subInterfaceList[i]["family"]["inet"]["address"][0]["addr"] = inputs["ipAddress"]
+               else:
+                   inet_item = {}
+                   addrList = []
+                   addrItem = {}
+                   addrItem["addr"] = inputs["ipAddress"]
+                   addrList.append(addrItem)
+                   inet_item["address"] = addrList
+                   jsonDumps = json.dumps(inet_item)
+                   interJson = json.loads(jsonDumps)
+                   subInterfaceList[i]["family"]["inet"] = interJson
+
+           #print("MATCHED IP ADDR :: %s", inputs["ipAddress"])
+    
+
+    #print("MKA RESPONSE :: %s", interfaceInfo)
+    return interfaceInfo
+
+
+
 
 def storeExecutionList(xml):
 
@@ -126,5 +161,6 @@ class FilterModule(object):
             'modifyInterfaceDetails': modifyInterfaceDetails,
             'updateInterfaceList': updateInterfaceList,
             'modifySubInterfaceDetails': modifySubInterfaceDetails,
+            'modifySubInterfaceDetailsIpAndVlan': modifySubInterfaceDetailsIpAndVlan,
             'storeExecutionList': storeExecutionList
         }
