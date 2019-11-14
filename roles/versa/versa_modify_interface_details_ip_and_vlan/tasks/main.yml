@@ -3,6 +3,8 @@
 - debug:
           msg: "Processing modifyInterface request for : {{ currentServiceItem }}"
 
+- set_fact:
+    currentItem: "{{ currentServiceItem }}"
 
 - name: Fetch Interface Information for Branch
   uri:
@@ -50,15 +52,13 @@
 
 
 
-#Save original ip address if already configured, else value will be defaulted to "Not Configured"
+#Save original ip address and vlanIdif already configured, else value will be defaulted to "Not Configured"
 - set_fact:
     origAttributes: { 'ipAddr': '{{ item.family.inet.address[0].addr | default("Not Configured")}}', 'vlanId': "{{ item['vlan-id'] | default('Not Configured') }}" }
   with_items:  "{{ interfaceInfo.vni.unit }}"
   when: item.name | string == currentServiceItem.subInterfaceId
 #  when: item.name | string == currentServiceItem.subInterfaceId and "inet" in item.family
 
-- debug:
-          msg: "ORIG ATTRIBUTES: {{ origAttributes }}"
 
 #Detect if this is a IP change, VLAN Change or Both
 - set_fact:
@@ -80,9 +80,6 @@
     - debug:
         msg: "SDKLOG-{{branchName}}: Not doing vlan modification for untagged interface {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
   when: currentServiceItem.vlanId == "Untagged" or origAttributes.vlanId == "Not Configured"  
-
-- debug:
-          msg: "IP CHANGE is : {{ ipChange }}, VLAN CHANGE is : {{ vlanChange }}"
 
 
 
