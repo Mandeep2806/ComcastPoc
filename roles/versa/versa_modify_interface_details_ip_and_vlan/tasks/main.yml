@@ -73,8 +73,12 @@
     vlanChange: true
   when: currentServiceItem.vlanId != origAttributes.vlanId
 
-- set_fact:
-    vlanChange: false
+- name: Check if we need to skip vlan modification for untagged interfaces
+  block:
+    - set_fact:
+        vlanChange: false
+    - debug:
+        msg: "SDKLOG-{{branchName}}: Not doing vlan modification for untagged interface {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
   when: currentServiceItem.vlanId == "Untagged" or origAttributes.vlanId == "Not Configured"  
 
 - debug:
