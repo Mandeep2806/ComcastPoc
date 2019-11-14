@@ -100,7 +100,7 @@
     - set_fact:
         inputParamsList: { 'input': '{{ currentServiceItem }}', 'interfaceInfo': '{{  interfaceInfo }}' , 'isIpChange': '{{ ipChange }}', 'isVlanChange': '{{ vlanChange }}'}
     - set_fact:
-        interfaceInfoBody: "{{ inputParamsList | modifySubInterfaceDetails }}"
+        interfaceInfoBody: "{{ inputParamsList | modifySubInterfaceDetailsIpAndVlan }}"
     - name: Modify Branch Interface
       uri:
         url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ currentServiceItem.portName }}%22"
