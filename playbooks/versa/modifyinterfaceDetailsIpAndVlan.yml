@@ -1,0 +1,30 @@
+---
+
+- hosts: localhost
+  become: false
+
+  tasks:
+    - block: 
+        - include_role:
+            name: versa/versa_modify_interface_details_ip_and_vlan
+          private: false
+          vars:
+            currentServiceItem: "{{ role_item }}"
+          with_items: " {{ modifyInterfaceList }}"
+          loop_control:
+            loop_var: "role_item"
+      rescue:
+         - include_vars: ../../roles/versa/versa_modify_interface_details_ip_and_vlan/defaults/main.yml
+         - debug:
+            msg: 'SDKLOG-{{ branchName }}: Modify Interface failed for {{ branchName }} with details {{ failedItem }} at {{ ansible_date_time.iso8601 }}'
+         - include_role:
+             name: versa/rollback_modify_interface
+           private: false
+           vars:
+             currentRollbackItem: "{{ role_item }}"
+           with_items: " {{ executionItems }}"
+           loop_control:
+             loop_var: "role_item"
+           when: suppressRollBack==False
+         - fail:
+              msg: Playbook failed to modify interface details
