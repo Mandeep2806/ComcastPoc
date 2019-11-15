@@ -146,6 +146,20 @@ def storeExecutionList(xml):
 
     return origList
 
+def addSubInterface(xml):
+
+    inputs = xml["input"]
+    interfaceInfo = xml["existingInterfaceInfo"]
+    addInterfaceItem =  xml["addInterfaceItem"]
+    subInterfaceList = interfaceInfo["vni"]["unit"]
+    subInterfaceList.append(addInterfaceItem)
+
+    return interfaceInfo
+
+
+
+
+
 def associateVpnToSubInterface(xml):
 
     routingInstancesMsg = xml["origRoutingInstancesMsg"]
@@ -196,6 +210,7 @@ class FilterModule(object):
             'modifySubInterfaceDetails': modifySubInterfaceDetails,
             'modifySubInterfaceDetailsIpAndVlan': modifySubInterfaceDetailsIpAndVlan,
             'storeExecutionList': storeExecutionList,
+            'addSubInterface': addSubInterface,
             'associateNetworkToSubInterface': associateNetworkToSubInterface,
             'removeSubInterfaceFromNetwork': removeSubInterfaceFromNetwork,
             'removeSubInterfaceFromInterface': removeSubInterfaceFromInterface,
