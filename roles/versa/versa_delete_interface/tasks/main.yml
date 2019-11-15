@@ -55,30 +55,110 @@
         updatedNetworksList: "{{ networksList | difference(fullSubInterfaceName | to_json ) }}"
 
 
-    - debug:
-        msg: "New Networks : {{ updatedNetworksList }}"
 
-    - set_fact:
-        removeNetworkInput: { 'origNetworkInfoMsg': '{{ assocNetworkItem }}', 'modifiedNetworkList': '{{ updatedNetworksList }}'  }
+    - block: 
 
-    - set_fact:
-        removeNetworkBody: "{{ removeNetworkInput | removeSubInterfaceFromNetwork }}"
+        - set_fact:
+            networksList: "{{ assocNetworkItem.interfaces }}"
 
-    - uri:
-        url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/networks/network/{{ assocNetworkName }}"
-        method: PUT
-        user: "{{ versa_username }}"
-        password: "{{ versa_password }}"
-        body: "{{ removeNetworkBody }}"
-        force_basic_auth: yes
-        status_code: 204
-        body_format: json
-        validate_certs: no
-        return_content: yes
-        headers:
-          Content-Type: "application/json"
-          Accept: "application/json"
-        register: response
+        - uri:
+            url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/routing-instances/routing-instance/{{ currentServiceItem.vpnName }}?deep"
+            method: GET
+            user: "{{ versa_username }}"
+            password: "{{ versa_password }}"
+            #body: "{{ interfaceinfo }}"
+            force_basic_auth: yes
+            status_code: 200
+            body_format: json
+            validate_certs: no
+            return_content: yes
+            headers:
+              Content-Type: "application/json"
+              Accept: "application/json"
+          register: routingInstance
+
+        - set_fact:
+             fetchedRoutingInstance: "{{ routingInstance.content | from_json }}"
+ 
+        - set_fact:
+             networkExistsInVR: false
+
+        - set_fact:
+             networkExistsInVR: true
+          when: ' "networks" in fetchedRoutingInstance["routing-instance"] and assocNetworkName in fetchedRoutingInstance["routing-instance"].networks'
+
+        - block: 
+          - set_fact:
+              vrfNetworks: "{{ fetchedRoutingInstance['routing-instance'].networks | difference(assocNetworkName | to_json ) }}"
+
+          - debug:
+              msg: "New VRF NETWORKS : {{ vrfNetworks }}"
+
+          - set_fact:
+              associateVpnInput: { 'origRoutingInstancesMsg': '{{ fetchedRoutingInstance }}', 'modifiedVrfNetworks': '{{ vrfNetworks }}' }
+
+          - set_fact:
+              associateVpnBody: "{{ associateVpnInput | associateVpnToSubInterface }}"
+
+          - uri:
+              url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/routing-instances/routing-instance/{{ currentServiceItem.vpnName }}"
+              method: PUT
+              user: "{{ versa_username }}"
+              password: "{{ versa_password }}"
+              body: "{{ associateVpnBody }}"
+              force_basic_auth: yes
+              status_code: 204
+              body_format: json
+              validate_certs: no
+              return_content: yes
+              headers:
+                Content-Type: "application/json"
+                Accept: "application/json"
+              register: updateVRResp
+ 
+          - uri:
+              url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/networks/network/{{ assocNetworkName }}"
+              method: DELETE
+              user: "{{ versa_username }}"
+              password: "{{ versa_password }}"
+              #body: "{{ associateVpnBody }}"
+              force_basic_auth: yes
+              status_code: 204
+              body_format: json
+              validate_certs: no
+              return_content: yes
+              headers:
+                Content-Type: "application/json"
+                Accept: "application/json"
+              register: deleteNetworkResp
+ 
+          when: networkExistsInVR == true 
+
+      when: updatedNetworksList | length == 0
+
+    - block:
+       - set_fact:
+           removeNetworkInput: { 'origNetworkInfoMsg': '{{ assocNetworkItem }}', 'modifiedNetworkList': '{{ updatedNetworksList }}'  }
+
+       - set_fact:
+           removeNetworkBody: "{{ removeNetworkInput | removeSubInterfaceFromNetwork }}"
+
+       - uri:
+           url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/networks/network/{{ assocNetworkName }}"
+           method: PUT
+           user: "{{ versa_username }}"
+           password: "{{ versa_password }}"
+           body: "{{ removeNetworkBody }}"
+           force_basic_auth: yes
+           status_code: 204
+           body_format: json
+           validate_certs: no
+           return_content: yes
+           headers:
+             Content-Type: "application/json"
+             Accept: "application/json"
+         register: response
+      when: updatedNetworksList | length != 0
 
     - debug:
         msg: "SDKLOG-{{branchName}}: Delete interface Successful for {{ fullSubInterfaceName }} at {{ ansible_date_time.iso8601 }}"
