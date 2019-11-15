@@ -160,8 +160,6 @@
          register: response
       when: updatedNetworksList | length != 0
 
-    - debug:
-        msg: "SDKLOG-{{branchName}}: Delete interface Successful for {{ fullSubInterfaceName }} at {{ ansible_date_time.iso8601 }}"
   when: isNetworkAssociated == true
 
 
@@ -218,3 +216,5 @@
     register: response
 
 
+- debug:
+    msg: "SDKLOG-{{branchName}}: Delete interface Successful for {{ fullSubInterfaceName }} at {{ ansible_date_time.iso8601 }}"
