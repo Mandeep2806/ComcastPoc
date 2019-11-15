@@ -1,0 +1,21 @@
+---
+
+- hosts: localhost
+  become: false
+
+  tasks:
+    - block: 
+        - include_role:
+            name: versa/versa_delete_interface
+          private: false
+          vars:
+            currentServiceItem: "{{ role_item }}"
+          with_items: " {{ deleteInterfaceList }}"
+          loop_control:
+            loop_var: "role_item"
+      rescue:
+         - include_vars: ../../roles/versa/versa_delete_interface/defaults/main.yml
+         - debug:
+            msg: 'SDKLOG-{{ branchName }}: Delete Interface failed for {{ branchName }} with details {{ failedItem }} at {{ ansible_date_time.iso8601 }}'
+         - fail:
+              msg: Playbook failed to delete interface details

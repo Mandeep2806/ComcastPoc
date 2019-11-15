@@ -1,0 +1,30 @@
+---
+
+- hosts: localhost
+  become: false
+
+  tasks:
+    - block: 
+        - include_role:
+            name: versa/versa_add_interface
+          private: false
+          vars:
+            currentServiceItem: "{{ role_item }}"
+          with_items: " {{ addInterfaceList }}"
+          loop_control:
+            loop_var: "role_item"
+      rescue:
+         - include_vars: ../../roles/versa/versa_add_interface/defaults/main.yml
+         - debug:
+            msg: 'SDKLOG-{{ branchName }}: Add Interface failed for {{ branchName }} with details {{ failedItem }} at {{ ansible_date_time.iso8601 }}'
+         - include_role:
+             name: versa/rollback_add_interface
+           private: false
+           vars:
+             currentRollbackItem: "{{ role_item }}"
+           with_items: " {{ executionItems }}"
+           loop_control:
+             loop_var: "role_item"
+           when: suppressRollBack==False
+         - fail:
+              msg: Playbook failed to add interface details
