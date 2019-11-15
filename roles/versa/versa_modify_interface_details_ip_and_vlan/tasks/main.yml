@@ -71,7 +71,7 @@
 
 - set_fact:
     vlanChange: true
-  when: currentServiceItem.vlanId != origAttributes.vlanId
+  when: currentServiceItem.vlanID != origAttributes.vlanId
 
 - name: Check if we need to skip vlan modification for untagged interfaces
   block:
@@ -79,7 +79,7 @@
         vlanChange: false
     - debug:
         msg: "SDKLOG-{{branchName}}: Not doing vlan modification for untagged interface {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
-  when: currentServiceItem.vlanId == "Untagged" or origAttributes.vlanId == "Not Configured"  
+  when: currentServiceItem.vlanID == "Untagged" or origAttributes.vlanId == "Not Configured"  
 
 
 
@@ -124,11 +124,11 @@
       when: ipChange == true and vlanChange == false
 
     - debug:
-          msg: "SDKLOG-{{branchName}}: Modify interface Successful, ip address changed from {{ origAttributes.ipAddr }} to {{ currentServiceItem.ipAddress }} ,  vlanId changed from {{ origAttributes.vlanId }} to {{ currentServiceItem.vlanId }} for port {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
+          msg: "SDKLOG-{{branchName}}: Modify interface Successful, ip address changed from {{ origAttributes.ipAddr }} to {{ currentServiceItem.ipAddress }} ,  vlanId changed from {{ origAttributes.vlanId }} to {{ currentServiceItem.vlanID }} for port {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
       when: ipChange == true and vlanChange == true
 
     - debug:
-          msg: "SDKLOG-{{branchName}}: Modify interface Successful, vlanId changed from {{ origAttributes.vlanId }} to {{ currentServiceItem.vlanId }} for port {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
+          msg: "SDKLOG-{{branchName}}: Modify interface Successful, vlanId changed from {{ origAttributes.vlanId }} to {{ currentServiceItem.vlanID }} for port {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
       when: ipChange == true and vlanChange == true
 
 #MAINTAIN THE EXECUTION LIST FOR ROLLBACK

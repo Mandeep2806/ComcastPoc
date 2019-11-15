@@ -109,7 +109,7 @@ def modifySubInterfaceDetailsIpAndVlan(xml):
     for i in range(0, len(subInterfaceList)):
         if ( str(subInterfaceList[i]["name"]) == inputs["subInterfaceId"] ):
            if( isVlanChange ):
-               subInterfaceList[i]["vlan-id"] = inputs["vlanId"]
+               subInterfaceList[i]["vlan-id"] = inputs["vlanID"]
            if( isIpChange ):
                if( "inet" in subInterfaceList[i]["family"]):
                    subInterfaceList[i]["family"]["inet"]["address"][0]["addr"] = inputs["ipAddress"]
