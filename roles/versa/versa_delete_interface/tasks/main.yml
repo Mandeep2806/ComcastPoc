@@ -1,0 +1,140 @@
+---
+
+- debug:
+          msg: "Processing addInterface request for : {{ currentServiceItem }}"
+
+- set_fact:
+    currentItem: "{{ currentServiceItem }}"
+
+##IF NETWORK EXISTS ASSOCIATE SUB INTERFACE TO NETWORK
+- set_fact:
+    fullSubInterfaceName: "{{ currentServiceItem.portName }}.{{ currentServiceItem.subInterfaceId }}"
+
+- name: Fetch Nework associated to subInterface
+  uri:
+    url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/networks/network?deep=true&offset=0&limit=25"
+    method: GET
+    user: "{{ versa_username }}"
+    password: "{{ versa_password }}"
+    #body: "{{ interfaceinfo }}"
+    force_basic_auth: yes
+    status_code: 200
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: networkListInfo
+ 
+- set_fact:
+    fetchedNetworkList: "{{ networkListInfo.content | from_json }}"
+    isNetworkAssociated: false
+
+- set_fact:
+    isNetworkAssociated: true
+    assocNetworkName: "{{ item.name }}"
+    assocNetworkItem: "{{ item }}"
+  with_items:  "{{ fetchedNetworkList.network }}"
+  when: fullSubInterfaceName in item.interfaces
+
+
+- debug:
+      msg: "Network Found  : {{ isNetworkAssociated }}"
+
+- name: Remove reference from Network
+  block:
+    - set_fact:
+        networksList: "{{ assocNetworkItem.interfaces }}"
+
+    - debug:
+        msg: "Network LIST  : {{ networksList }}"
+
+    - set_fact:
+        #updatedNetworksList: "{{ networksList }} -  [ {{ fullSubInterfaceName | to_json }}  ]"
+        updatedNetworksList: "{{ networksList | difference(fullSubInterfaceName | to_json ) }}"
+
+
+    - debug:
+        msg: "New Networks : {{ updatedNetworksList }}"
+
+    - set_fact:
+        removeNetworkInput: { 'origNetworkInfoMsg': '{{ assocNetworkItem }}', 'modifiedNetworkList': '{{ updatedNetworksList }}'  }
+
+    - set_fact:
+        removeNetworkBody: "{{ removeNetworkInput | removeSubInterfaceFromNetwork }}"
+
+    - uri:
+        url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/networks/network/{{ assocNetworkName }}"
+        method: PUT
+        user: "{{ versa_username }}"
+        password: "{{ versa_password }}"
+        body: "{{ removeNetworkBody }}"
+        force_basic_auth: yes
+        status_code: 204
+        body_format: json
+        validate_certs: no
+        return_content: yes
+        headers:
+          Content-Type: "application/json"
+          Accept: "application/json"
+        register: response
+
+    - debug:
+        msg: "SDKLOG-{{branchName}}: Delete interface Successful for {{ fullSubInterfaceName }} at {{ ansible_date_time.iso8601 }}"
+  when: isNetworkAssociated == true
+
+
+
+##NOW PROCEED WITH THE INTERFACE DELETION
+- name: Fetch Interface Information for Branch
+  uri:
+    url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ currentServiceItem.portName }}%22?deep"
+    method: GET
+    user: "{{ versa_username }}"
+    password: "{{ versa_password }}"
+    #body: "{{ interfaceinfo }}"
+    force_basic_auth: yes
+    status_code: 200
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: fetchInterfaceResponse
+
+
+- set_fact:
+    fetchInterfaceInfo: "{{ fetchInterfaceResponse.content | from_json }}"
+
+
+- set_fact:
+    removeInterfaceInput: { 'origInterfaceInfoMsg': '{{ fetchInterfaceInfo }}', 'subInterfaceId': '{{ currentServiceItem.subInterfaceId }}'  }
+
+- set_fact:
+    removeInterfaceBody: "{{ removeInterfaceInput | removeSubInterfaceFromInterface }}"
+
+
+#    addInterfaceParamsList: { 'input': '{{ currentServiceItem }}', 'existingInterfaceInfo': '{{  fetchInterfaceInfo }}', 'addInterfaceItem': '{{ addInterfaceItem }}'}
+#- set_fact:
+#    addInterfaceInfoBody: "{{ addInterfaceParamsList | addSubInterface }}"
+
+- name: Update Interface with removed item
+  uri:
+    url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ currentServiceItem.portName }}%22"
+    method: PUT
+    user: "{{ versa_username }}"
+    password: "{{ versa_password }}"
+    body: "{{ removeInterfaceBody }}"
+    force_basic_auth: yes
+    status_code: 204
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    register: response
+
+

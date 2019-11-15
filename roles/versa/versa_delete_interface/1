@@ -1,0 +1,149 @@
+---
+
+- debug:
+          msg: "Processing addInterface request for : {{ currentServiceItem }}"
+
+- set_fact:
+    currentItem: "{{ currentServiceItem }}"
+
+##IF NETWORK EXISTS ASSOCIATE SUB INTERFACE TO NETWORK
+- set_fact:
+    fullSubInterfaceName: "{{ currentServiceItem.portName }}.{{ currentServiceItem.subInterfaceId }}"
+
+- name: Fetch Nework associated to subInterface
+  uri:
+    url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/networks/network?deep=true&offset=0&limit=25"
+    method: GET
+    user: "{{ versa_username }}"
+    password: "{{ versa_password }}"
+    #body: "{{ interfaceinfo }}"
+    force_basic_auth: yes
+    status_code: 200
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: networkListInfo
+ 
+- set_fact:
+    fetchedNetworkList: "{{ networkListInfo.content | from_json }}"
+    isNetworkAssociated: false
+
+- set_fact:
+    isNetworkAssociated: true
+    assocNetworkName: "{{ item.name }}"
+    assocNetworkItem: "{{ item }}"
+  with_items:  "{{ fetchedNetworkList.network }}"
+  when: fullSubInterfaceName in item.interfaces
+
+
+- debug:
+      msg: "Network Found  : {{ isNetworkAssociated }}"
+
+- name: Remove reference from Network
+  block:
+    - set_fact:
+        networksList: "{{ assocNetworkItem.interfaces }}"
+
+    - set_fact:
+        updatedNetworksList: "{{ networksList }} -  [ {{ fullSubInterfaceName | to_json }}  ]"
+
+    - debug:
+        msg: "New Networks : {{ updatedNetworksList }}"
+
+    - set_fact:
+        removeNetworkInput: { 'origNetworkInfoMsg': '{{ assocNetworkItem }}', 'modifiedNetworkList': '{{ updatedNetworksList }}'  }
+
+    - set_fact:
+        removeNetworkBody: "{{ removeNetworkInput | removeSubInterfaceFromNetwork }}"
+
+    - uri:
+        url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/networks/network/{{ associatedNetwork }}"
+        method: PUT
+        user: "{{ versa_username }}"
+        password: "{{ versa_password }}"
+        body: "{{ removeNetworkBody }}"
+        force_basic_auth: yes
+        status_code: 204
+        body_format: json
+        validate_certs: no
+        return_content: yes
+        headers:
+          Content-Type: "application/json"
+          Accept: "application/json"
+        register: response
+
+    - debug:
+        msg: "SDKLOG-{{branchName}}: Add interface Successful with ipAddr: {{ currentServiceItem.ipAddress }} and vlanId: {{ currentServiceItem.vlanId }} for {{ fullSubInterfaceName }}, found existing Network {{ associatedNetwork }} associated to VPN: {{ currentServiceItem.vpnName }} at {{ ansible_date_time.iso8601 }}"
+  when: isNetworkAssociated == true
+
+
+
+##IF NETWORK DOESN'T EXISTS CREATE A NEW NETWORK AND ASSOCIATE THAT NETWORK TO VR
+- name: Update the Network Interfaces Array 
+  block: 
+    - set_fact:
+        newNetwork: "{{ currentServiceItem.vpnName }}_LANNETWORK"
+
+    - uri:
+        url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/networks"
+        method: POST
+        user: "{{ versa_username }}"
+        password: "{{ versa_password }}"
+        body: "{{ createNetworkBody }}"
+        force_basic_auth: yes
+        status_code: 201
+        body_format: json
+        validate_certs: no
+        return_content: yes
+        headers:
+          Content-Type: "application/json"
+          Accept: "application/json"
+      register: createNetwork
+
+    - set_fact:
+        vrfNetworks: "{{ fetchedRoutingInstance['routing-instance'].networks | default ([]) }}"
+
+    - set_fact:
+        vrfNetworks: "{{ vrfNetworks }} +  [ {{ newNetwork | to_json }}  ]"
+
+
+    - debug:
+          msg: "New VRF NETWORKS : {{ vrfNetworks }}"
+
+    - set_fact:
+        associateVpnInput: { 'origRoutingInstancesMsg': '{{ fetchedRoutingInstance }}', 'modifiedVrfNetworks': '{{ vrfNetworks }}' }
+
+    - set_fact:
+        associateVpnBody: "{{ associateVpnInput | associateVpnToSubInterface }}"
+
+    - uri:
+        url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/routing-instances/routing-instance/{{ currentServiceItem.vpnName }}"
+        method: PUT
+        user: "{{ versa_username }}"
+        password: "{{ versa_password }}"
+        body: "{{ associateVpnBody }}"
+        force_basic_auth: yes
+        status_code: 204
+        body_format: json
+        validate_certs: no
+        return_content: yes
+        headers:
+          Content-Type: "application/json"
+          Accept: "application/json"
+        register: response
+     
+    - debug:
+        msg: "SDKLOG-{{branchName}}: Add interface Successful with ipAddr: {{ currentServiceItem.ipAddress }} and vlanId: {{ currentServiceItem.vlanId }} for{{ fullSubInterfaceName }}, created new network {{ newNetwork }} association to VPN: {{ currentServiceItem.vpnName }} at {{ ansible_date_time.iso8601 }}"
+  when: networkExists == false
+
+- set_fact:
+    tmpExecutionList: "{{ executionList | default([])}}"
+
+- set_fact:
+    executionListInput: { 'origList': '{{ tmpExecutionList }}', 'interfaceInfo': '{{  fetchInterfaceInfo }}', 'currentItem': '{{ currentServiceItem }}' }
+
+- set_fact:
+    executionList: "{{ executionListInput | storeExecutionList }}"

@@ -1,0 +1,49 @@
+---
+
+method: POST
+username: ""
+password: ""
+
+branchName: "Branch5"
+branchCity: "Shanghai"
+branchState: "Shanghai"
+branchCountry: "China"
+address: "Shanghai, China"
+latitude: "31.23"
+longitude: "121.47"
+zip: "1111"
+lanIp: "172.31.120.5/24"
+serialNumber: "99991"
+serviceBandwidth: "50Mbps"
+wanIpForInternet: "172.31.48.18/24"
+Organization: "Customer1"
+wanIpForMpls: "172.31.64.19/24"
+stagingTemplateName: "SDWAN-Staging"
+postStagingTemplateName: "SDWAN-PostStaging"
+towardsInternetHopAddress: "172.31.48.101"
+towardsMplsHopAddress: "172.31.64.100"
+
+local_params:
+  address1: "{{ address }}"
+  state: "{{ branchState }}"
+  country: "{{ branchCountry }}"
+  zip: "{{ zip }}"
+  longitude: "{{ longitude }}"
+  latitude: "{{ latitude }}"
+  city: "{{ branchCity }}"
+
+sdwan_modify1_workflow:
+  interface:
+    name: 'vni-0/0'
+    description: "WAN1Shaper"
+    shaping-rate:
+      rate: "{{ shapingRateWan1 }}"
+    scheduler-map: "WANScheduler"
+
+sdwan_modify2_workflow:
+  interface:
+    name: 'vni-0/1'
+    description: "WAN2Shaper"
+    shaping-rate:
+      rate: "{{ shapingRateWan2 }}"
+    scheduler-map: "WANScheduler"

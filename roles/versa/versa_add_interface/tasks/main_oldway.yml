@@ -1,0 +1,118 @@
+---
+
+#- debug:
+#    var: sdwan_modify1_workflow
+#    var: sdwan_modify2_workflow
+
+- name: Get the Branch Device information
+  uri:
+    url: "{{ versaUrl }}/vnms/sdwan/workflow/devices/device/{{ branchName }}"
+    method: GET
+    user: "{{ username }}"
+    password: "{{ password }}"
+    force_basic_auth: yes
+    status_code: 200,202, 204
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: branchResponse
+
+- set_fact:
+    postStagingTemplateName: "{{ branchResponse['json']['versanms.sdwan-device-workflow']['postStagingTemplateInfo']['templateName'] }}"
+
+- name: Get the Branch's networks information
+  uri:
+    url: "{{ versaUrl }}/api/config/devices/device/{{ branchName }}/config/networks/network"
+    method: GET
+    user: "{{ username }}"
+    password: "{{ password }}"
+    force_basic_auth: yes
+    status_code: 200,202, 204
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: networkInformationResponse
+
+- set_fact:
+        networkInfo: "{{ networkInformationResponse.content | from_json }}"
+
+#- set_fact:
+#    interfaceInfoList: "{{ interfaceInfoList | default([])}} + [ { 'networkName': '{{ item.name }}', 'lanPortId': '{{ item.name }}' } ]"
+#  with_subelements: {{ networkInfo.network }} 
+
+- set_fact:
+    updateInterfaceInput: { 'portalInputs': '{{ modifyInterfaceList }}', 'networkInfoList': '{{ networkInfo.network }}' }
+
+- set_fact:
+    updatedInterfaceList: "{{ updateInterfaceInput | updateInterfaceList }}"
+
+- debug:
+          msg: "UPDATED INTERFACE LIST: {{ updatedInterfaceList }}"
+
+- set_fact:
+    inputParamsList: { 'origMsg': '{{ branchResponse.content }}', 'inputs': '{{ updatedInterfaceList }}' }
+
+- set_fact:
+    deviceConfigurationBody: "{{ inputParamsList | modifyInterfaceDetails }}"
+
+- debug:
+          msg: "UPDATED DEVICE CONFIGURATION BODY: {{ deviceConfigurationBody }}"
+
+- name: Save Device configuration 
+  uri:
+    url: "{{ versaUrl }}/vnms/sdwan/workflow/devices/device/{{ branchName }}"
+    method: PUT
+    user: "{{ username }}"
+    password: "{{ password }}"
+    body: "{{ deviceConfigurationBody }}"
+    force_basic_auth: yes
+    status_code: 200
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: response
+
+- name: Deploy changes to the Device
+  uri:
+    url: "{{ versaUrl }}/vnms/sdwan/workflow/devices/device/deploy/{{ branchName }}"
+    method: POST
+    user: "{{ username }}"
+    password: "{{ password }}"
+#    body: "{{ deviceinfo }}"
+    force_basic_auth: yes
+    status_code: 200,202
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: response
+
+- name: Commit changes to the Device
+  uri:
+    url: "{{ versaUrl }}/vnms/template/applyTemplate/{{ postStagingTemplateName }}/devices?reboot=false"
+    method: POST
+    user: "{{ username }}"
+    password: "{{ password }}"
+    body: "{{ deviceinfo }}"
+    force_basic_auth: yes
+    status_code: 200
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: response
+
+

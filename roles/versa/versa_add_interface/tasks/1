@@ -1,0 +1,106 @@
+---
+
+- debug:
+          msg: "CHECK Current ITEM: {{ currentServiceItem }}"
+- debug:
+          msg: "CHECK VERSA URL: {{ versa_url }}"
+- debug:
+          msg: "CHECK VERSA URL: {{ versa_username }}"
+- debug:
+          msg: "CHECK VERSA URL: {{ versa_password }}"
+
+- set_fact:
+    currentItem: "{{ currentServiceItem }}"
+
+- name: Fetch Interface Information for Branch
+  uri:
+    url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ currentServiceItem.portName }}%22?deep"
+    method: GET
+    user: "{{ versa_username }}"
+    password: "{{ versa_password }}"
+    #body: "{{ interfaceinfo }}"
+    force_basic_auth: yes
+    status_code: 200
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: interfaceResponse
+
+
+- set_fact:
+    interfaceInfo: "{{ interfaceResponse.content | from_json }}"
+
+#- set_fact:
+#    subInterfaceId: "{{ currentServiceItem.subInterfaceId }}"
+
+#- set_fact:
+#    item.family.inet.address[0].addr: "{{ currentServiceItem.ipAddress }}"
+#  with_items:  "{{ interfaceInfo.vni.unit }}"
+#  when: item.name | string == subInterfaceId
+
+
+- debug:
+          msg: "MY CASE HIT"
+  with_items:  "{{ interfaceInfo.vni.unit }}"
+  when: '"inet" not in item.family'
+
+
+
+#Save original ip address
+- set_fact:
+    origAttributes: { 'ipAddr': '{{ item.family.inet.address[0].addr }}', 'vlanId': '{{ item.family.inet.address[0].addr }}' }
+  with_items:  "{{ interfaceInfo.vni.unit }}"
+  when: item.name | string == currentServiceItem.subInterfaceId and "inet" in item.family
+
+
+
+- set_fact:
+    inputParamsList: { 'input': '{{ currentServiceItem }}', 'interfaceInfo': '{{  interfaceInfo }}' }
+
+- set_fact:
+    interfaceInfoBody: "{{ inputParamsList | modifySubInterfaceDetails }}"
+  
+
+
+- name: Modify Branch Interface
+  uri:
+    url: "{{ versa_url }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ currentServiceItem.portName }}%22"
+    method: PUT
+    user: "{{ versa_username }}"
+    password: "{{ versa_password }}"
+    body: "{{ interfaceInfoBody }}"
+    force_basic_auth: yes
+    status_code: 204
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: response
+
+- debug:
+          msg: "SDKLOG-{{branchName}}: Modify interface Successful, ip address changed from {{ origIpAddr }} to {{ currentServiceItem.ipAddress }} for port {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
+
+
+#MAINTAIN THE EXECUTION LIST FOR ROLLBACK
+#- set_fact:
+#    executionList: "{{ executionList | default([])}} +  [ { 'modifyItem': 'abc', 'origMsg': 'xyz' } ]"
+
+
+#- set_fact:
+#    executionList: "{{ executionList | default([])}} +  [ { 'modifyItem': '{{ currentServiceItem }}', 'origMsg': '{{ interfaceInfo }}' } ]"
+
+- set_fact:
+    tmpExecutionList: "{{ executionList | default([])}}"
+
+- set_fact:
+    executionListInput: { 'origList': '{{ tmpExecutionList }}', 'interfaceInfo': '{{  interfaceInfo }}', 'currentItem': '{{ currentServiceItem }}' }
+
+- set_fact:
+    executionList: "{{ executionListInput | storeExecutionList }}"
+
+

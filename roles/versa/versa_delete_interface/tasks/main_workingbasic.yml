@@ -1,0 +1,22 @@
+---
+
+- debug:
+          msg: "MODIFY INTERFACE LIST INPUT: {{ modifyInterfaceList }}"
+
+- name: Commit changes to the Device
+  uri:
+    url: "{{ versaUrl }}/api/config/devices/device/{{ branchName }}/config/interfaces/vni/%22{{ item.portName }}%22"
+    method: PUT
+    user: "{{ username }}"
+    password: "{{ password }}"
+    body: "{{ interfaceinfo }}"
+    force_basic_auth: yes
+    status_code: 204
+    body_format: json
+    validate_certs: no
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: response
+  with_items:  "{{ modifyInterfaceList }}"
