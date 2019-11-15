@@ -146,8 +146,41 @@ def storeExecutionList(xml):
 
     return origList
 
+def associateVpnToSubInterface(xml):
 
+    routingInstancesMsg = xml["origRoutingInstancesMsg"]
+    modifiedVrfNetworks = xml["modifiedVrfNetworks"]
+    routingInstancesMsg["routing-instance"]["networks"] = modifiedVrfNetworks
+    return routingInstancesMsg
 
+def associateNetworkToSubInterface(xml):
+
+    networkInfoMsg = xml["origNetworkInfoMsg"]
+    modifiedNetworkList = xml["modifiedNetworkList"]
+    networkInfoMsg["network"]["interfaces"] = modifiedNetworkList
+    return networkInfoMsg
+
+def removeSubInterfaceFromNetwork(xml):
+
+    networkInfoMsg = xml["origNetworkInfoMsg"]
+    modifiedNetworkList = xml["modifiedNetworkList"]
+    networkInfoMsg["interfaces"] = modifiedNetworkList
+    
+    removeInfoMsg = {}
+    removeInfoMsg["network"] = networkInfoMsg
+    return removeInfoMsg
+
+def removeSubInterfaceFromInterface(xml):
+
+    interfaceInfoMsg = xml["origInterfaceInfoMsg"]
+    unitList = xml["origInterfaceInfoMsg"]["vni"]["unit"]
+    subInterfaceId = xml["subInterfaceId"]
+    for i in range(0, len(unitList)):
+        if ( str(unitList[i]["name"]) == subInterfaceId ):
+            del unitList[i]
+            break
+
+    return interfaceInfoMsg
 
 
 
@@ -162,5 +195,9 @@ class FilterModule(object):
             'updateInterfaceList': updateInterfaceList,
             'modifySubInterfaceDetails': modifySubInterfaceDetails,
             'modifySubInterfaceDetailsIpAndVlan': modifySubInterfaceDetailsIpAndVlan,
-            'storeExecutionList': storeExecutionList
+            'storeExecutionList': storeExecutionList,
+            'associateNetworkToSubInterface': associateNetworkToSubInterface,
+            'removeSubInterfaceFromNetwork': removeSubInterfaceFromNetwork,
+            'removeSubInterfaceFromInterface': removeSubInterfaceFromInterface,
+            'associateVpnToSubInterface': associateVpnToSubInterface
         }
