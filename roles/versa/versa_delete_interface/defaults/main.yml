@@ -5,34 +5,5 @@ versa_username: "{{ lookup('env', 'VERSA_USERNAME') }}"
 versa_password: "{{ lookup('env', 'VERSA_PASSWORD') }}"
 
 
-deviceinfo:
-  versanms.devices:
-    device-list: "{{ branchName }}"
-
 executionItems: "{{ executionList | default([]) }}"
 failedItem: "{{ currentItem }}"
-
-ipChange: false
-vlanChange: false
-
-origAttributes:
-  ipAddr: "Not Configured"
-  vlanId: "Not Configured"
-
-addInterfaceItem:
-    name: "{{ currentServiceItem.subInterfaceId }}"
-    vlan-id: "{{ currentServiceItem.vlanId }}"
-    family:
-     inet:
-      address:
-       - addr: "{{ currentServiceItem.ipAddress }}"
-    enable: true
-
-createNetworkBody:
-  network:
-    name: "{{ newNetwork }}"
-    interfaces:
-     - "{{ fullSubInterfaceName }}"
-     #- "{{ currentServiceItem.portName }}" + "." + "{{ currentServiceItem.subInterfaceId }}"
-#url: 
-#  url: "{{ https://35.165.81.59:9182/vnms/ }}"
