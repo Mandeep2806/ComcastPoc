@@ -21,7 +21,7 @@ origAttributes:
 
 addInterfaceItem:
     name: "{{ currentServiceItem.subInterfaceId }}"
-    vlan-id: "{{ currentServiceItem.vlanId }}"
+    vlan-id: "{{ currentServiceItem.vlanID }}"
     family:
      inet:
       address:

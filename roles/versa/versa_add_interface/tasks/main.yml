@@ -50,7 +50,7 @@
     register: response
 
 #- debug:
-#      msg: "SDKLOG-{{branchName}}: Add interface Successful with ipAddr: {{ currentServiceItem.ipAddress }} and vlanId: {{ currentServiceItem.vlanId }} for port {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
+#      msg: "SDKLOG-{{branchName}}: Add interface Successful with ipAddr: {{ currentServiceItem.ipAddress }} and vlanId: {{ currentServiceItem.vlanID }} for port {{  currentServiceItem.portName }} and interfaceID {{ currentServiceItem.subInterfaceId }} at {{ ansible_date_time.iso8601 }}"
 
 - name: Fetch the Routing Instance to find out VR 
   block: 
@@ -155,7 +155,7 @@
         register: response
 
     - debug:
-        msg: "SDKLOG-{{branchName}}: Add interface Successful with ipAddr: {{ currentServiceItem.ipAddress }} and vlanId: {{ currentServiceItem.vlanId }} for {{ fullSubInterfaceName }}, found existing Network {{ associatedNetwork }} associated to VPN: {{ currentServiceItem.vpnName }} at {{ ansible_date_time.iso8601 }}"
+        msg: "SDKLOG-{{branchName}}: Add interface Successful with ipAddr: {{ currentServiceItem.ipAddress }} and vlanId: {{ currentServiceItem.vlanID }} for {{ fullSubInterfaceName }}, found existing Network {{ associatedNetwork }} associated to VPN: {{ currentServiceItem.vpnName }} at {{ ansible_date_time.iso8601 }}"
   when: networkExists == true
 
 
@@ -215,7 +215,7 @@
         register: response
      
     - debug:
-        msg: "SDKLOG-{{branchName}}: Add interface Successful with ipAddr: {{ currentServiceItem.ipAddress }} and vlanId: {{ currentServiceItem.vlanId }} for{{ fullSubInterfaceName }}, created new network {{ newNetwork }} association to VPN: {{ currentServiceItem.vpnName }} at {{ ansible_date_time.iso8601 }}"
+        msg: "SDKLOG-{{branchName}}: Add interface Successful with ipAddr: {{ currentServiceItem.ipAddress }} and vlanId: {{ currentServiceItem.vlanID }} for{{ fullSubInterfaceName }}, created new network {{ newNetwork }} association to VPN: {{ currentServiceItem.vpnName }} at {{ ansible_date_time.iso8601 }}"
   when: networkExists == false
 
 - set_fact:
