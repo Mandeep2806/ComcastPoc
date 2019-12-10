@@ -1,0 +1,1 @@
+branchName, customerName(Customer1), serialNumber, address, city, state, country, zip, templateName(Customer1_PostStaging),"{$v_INTERNET-Transport-VR_IPv4__vrHopAddress}","{$v_LAN_IPv4__staticaddress}","{$v_INTERNET_IPv4__staticaddress}"
